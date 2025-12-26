@@ -1,7 +1,7 @@
 import { DirectedGraph } from 'graphology'
 import { bfsFromNode, dfsFromNode } from 'graphology-traversal'
 import type { PullRequest, Context, StackNodeAttributes } from './types'
-import { renderVisualization } from './renderer'
+import { renderVisualization, wrapInAlert } from './renderer'
 import { createLocationAdapter } from './locations/factory'
 
 export async function main(context: Context) {
@@ -11,6 +11,7 @@ export async function main(context: Context) {
     mainBranch,
     perennialBranches,
     skipSingleStacks,
+    alertType,
   } = context
   const repoGraph = new DirectedGraph<StackNodeAttributes>()
 
@@ -101,7 +102,11 @@ export async function main(context: Context) {
 
     jobs.push(async () => {
       const stackGraph = getStackGraph(stackNode, repoGraph)
-      const visualization = renderVisualization(stackGraph, terminatingRefs)
+      let visualization = renderVisualization(stackGraph, terminatingRefs)
+
+      if (alertType) {
+        visualization = wrapInAlert(visualization, alertType)
+      }
 
       const location = createLocationAdapter(context)
       await location.update(stackNode, visualization)

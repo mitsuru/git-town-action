@@ -26,6 +26,7 @@ export type Context = {
   perennialBranches: string[]
   skipSingleStacks: boolean
   location: LocationInput
+  alertType?: string
 }
 
 export type StackNode =

@@ -63,6 +63,13 @@ export function renderVisualization(
   return lines.join('\n')
 }
 
+export function wrapInAlert(visualization: string, alertType: string): string {
+  const alertHeader = `[!${alertType.toUpperCase()}]`
+  const lines = visualization.split('\n')
+  const wrappedLines = lines.map((line) => `> ${line}`)
+  return `> ${alertHeader}\n${wrappedLines.join('\n')}`
+}
+
 export function injectVisualization(visualization: string, content: string) {
   const contentAst = remark.parse(content)
   const visualizationAst = remark.parse(visualization)

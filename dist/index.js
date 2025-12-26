@@ -18919,10 +18919,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       command_1.issueCommand("error", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
     exports2.error = error;
-    function warning2(message, properties = {}) {
+    function warning3(message, properties = {}) {
       command_1.issueCommand("warning", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
-    exports2.warning = warning2;
+    exports2.warning = warning3;
     function notice(message, properties = {}) {
       command_1.issueCommand("notice", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
@@ -42783,6 +42783,13 @@ function renderVisualization(graph, terminatingRefs) {
   );
   return lines.join("\n");
 }
+function wrapInAlert(visualization, alertType) {
+  const alertHeader = `[!${alertType.toUpperCase()}]`;
+  const lines = visualization.split("\n");
+  const wrappedLines = lines.map((line) => `> ${line}`);
+  return `> ${alertHeader}
+${wrappedLines.join("\n")}`;
+}
 function injectVisualization(visualization, content3) {
   const contentAst = remark2.parse(content3);
   const visualizationAst = remark2.parse(visualization);
@@ -42936,7 +42943,8 @@ async function main(context4) {
     pullRequests,
     mainBranch,
     perennialBranches,
-    skipSingleStacks
+    skipSingleStacks,
+    alertType
   } = context4;
   const repoGraph = new import_graphology.DirectedGraph();
   repoGraph.mergeNode(mainBranch, {
@@ -43000,7 +43008,10 @@ async function main(context4) {
     }
     jobs.push(async () => {
       const stackGraph2 = getStackGraph(stackNode, repoGraph);
-      const visualization = renderVisualization(stackGraph2, terminatingRefs);
+      let visualization = renderVisualization(stackGraph2, terminatingRefs);
+      if (alertType) {
+        visualization = wrapInAlert(visualization, alertType);
+      }
       const location = createLocationAdapter(context4);
       await location.update(stackNode, visualization);
     });
@@ -46932,6 +46943,26 @@ var inputs = {
     core3.endGroup();
     return historyLimit;
   },
+  getAlertType() {
+    const validTypes = ["note", "tip", "important", "warning", "caution"];
+    const input = core3.getInput("alert-type", {
+      required: false,
+      trimWhitespace: true
+    }).toLowerCase();
+    core3.startGroup("Inputs: Alert type");
+    core3.info(input || "(none)");
+    core3.endGroup();
+    if (input === "") {
+      return void 0;
+    }
+    if (!validTypes.includes(input)) {
+      core3.warning(
+        `Invalid 'alert-type' input: ${input}. Valid values: ${validTypes.join(", ")}`
+      );
+      return void 0;
+    }
+    return input;
+  },
   async getMainBranch(octokit, config2, context4) {
     const {
       data: { default_branch: defaultBranch }
@@ -47100,6 +47131,7 @@ async function run() {
     const location = inputs.getLocation();
     const skipSingleStacks = inputs.getSkipSingleStacks();
     const historyLimit = inputs.getHistoryLimit();
+    const alertType = inputs.getAlertType();
     const [mainBranch, remoteBranches, pullRequests] = await Promise.all([
       inputs.getMainBranch(octokit, config, github3.context),
       inputs.getRemoteBranches(octokit, github3.context),
@@ -47113,7 +47145,8 @@ async function run() {
       mainBranch,
       perennialBranches,
       skipSingleStacks,
-      location
+      location,
+      alertType
     };
     void main(context4);
   } catch (error) {

@@ -49,6 +49,33 @@ export const inputs = {
     return historyLimit
   },
 
+  getAlertType(): string | undefined {
+    const validTypes = ['note', 'tip', 'important', 'warning', 'caution']
+    const input = core
+      .getInput('alert-type', {
+        required: false,
+        trimWhitespace: true,
+      })
+      .toLowerCase()
+
+    core.startGroup('Inputs: Alert type')
+    core.info(input || '(none)')
+    core.endGroup()
+
+    if (input === '') {
+      return undefined
+    }
+
+    if (!validTypes.includes(input)) {
+      core.warning(
+        `Invalid 'alert-type' input: ${input}. Valid values: ${validTypes.join(', ')}`
+      )
+      return undefined
+    }
+
+    return input
+  },
+
   async getMainBranch(
     octokit: Octokit,
     config: Config | undefined,

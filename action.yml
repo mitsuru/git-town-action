@@ -27,6 +27,10 @@ inputs:
   history-limit:
     required: false
     default: '0'
+  alert-type:
+    description: 'Wrap visualization in GitHub alert (note, tip, important, warning, caution, or empty for none)'
+    required: false
+    default: ''
 
 runs:
   using: 'node20'

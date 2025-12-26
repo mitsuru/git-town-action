@@ -23,6 +23,7 @@ async function run() {
     const location = inputs.getLocation()
     const skipSingleStacks = inputs.getSkipSingleStacks()
     const historyLimit = inputs.getHistoryLimit()
+    const alertType = inputs.getAlertType()
     const [mainBranch, remoteBranches, pullRequests] = await Promise.all([
       inputs.getMainBranch(octokit, config, github.context),
       inputs.getRemoteBranches(octokit, github.context),
@@ -38,6 +39,7 @@ async function run() {
       perennialBranches,
       skipSingleStacks,
       location,
+      alertType,
     } satisfies Context
 
     void main(context)
